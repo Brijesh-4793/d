@@ -163,38 +163,7 @@ class Sampler:
             dna['num'] = sum([tp[0] for tp in dna['re']])
         return out_dnas
 
-# class PCRer:
-#     def __init__(self,N = 16, p = 0.7, arg = None):
-#         if arg: 
-#             p = arg.pcrp
-#             N = arg.pcrc
-#         self.p = p
-#         self.N = N
-#         self.u0 = (1+p)**N
-#         self.sigma0 = np.sqrt((1-p) / (1+p) * ((1+p)**(2*N) - (1+p)**N))
-    
-#     def distribution(self,ori):
-#         assert ori >= 0
-#         return max(int(np.random.normal(self.u0 * ori, self.sigma0 * sqrt(ori))),0)
 
-#     def run(self,re_dnas):
-#         out = []
-#         for dna in re_dnas:
-#             dna[0] = self.distribution(dna[0])
-#             if dna[0] > 0:
-#                 out.append(dna)
-#         return out
-    
-#     def __call__(self,dnas,in_place = False):
-#         if not in_place:
-#             out_dnas = copy.deepcopy(dnas)
-#         else:
-#             out_dnas = dnas
-            
-#         for dna in out_dnas:
-#             dna['re'] = self.run(dna['re'])
-#             dna['num'] = sum([tp[0] for tp in dna['re']])
-#         return out_dnas
     
 class PCRer:
     def __init__(self,N = 16, p = 0.7, pBias = 0.05, arg = None):
@@ -285,16 +254,15 @@ class ErrorAdder:
             out_dnas = self.apply_batch(out_dnas)
         return out_dnas
     
-    # apply errors to dnas
     def apply(self, ori_dna, errors):
         dna = list(ori_dna)
         errors.sort(key = lambda x: x[0])
-        # substitutions
+       
         for error in errors:
             pos, tp, base = error
             if tp == 's':
                 dna[pos] = base
-        # del / insertions
+        
         for error in errors:
             bias = 0
             pos, tp, base = error
@@ -302,7 +270,7 @@ class ErrorAdder:
                 try:
                     dna.pop(pos + bias)
                 except:
-                    # print('pop index error:', pos + bias)
+                    
                     break
                 bias -= 1
             elif tp == '+':
