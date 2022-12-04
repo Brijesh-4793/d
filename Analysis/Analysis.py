@@ -26,7 +26,7 @@ def inspect_number_only(dnas, num_th = 1):
     lost_num = sum([rN == 0 for rN in rNs])
     error_nums = error_distribution(dnas)
     error_num = sum([n >= num_th for n in error_nums])
-    # print(f'{lost_num} lost. {error_num} strands have {num_th} errors or more. sum: {error_num  + lost_num}')
+    
     return lost_num, error_num
 
 def plot_oligo_number_distribution(dnas):
@@ -47,7 +47,7 @@ def plot_error_distribution(dnas, th = 1):
     error_nums = error_distribution(dnas)
     esn = sum([n >= th for n in error_nums])
     label = f'{esn}({round(esn/len(error_nums)*100,2)}%) with more than {th} errors'
-    ax = sns.distplot(error_nums, hist= False, color="r", kde_kws={"shade": True, 'bw': 0.1})
+    ax = sns.distplot(error_nums, hist= False, color="b", kde_kws={"shade": True, 'bw': 0.1})
 
     plt.text(0.95,0.95,f'{esn}({round(esn/len(error_nums)*100,2)}%)',fontsize = 12, color = 'r',transform = ax.transAxes, va = 'top', ha = 'right')
 
@@ -114,7 +114,8 @@ class dna_chunk:
             num,error,dna = re_dna
             dna = self.plot_error_dna_html(dna,error)
             table.append([(dna,'style = "color:#cccccc"'), num])
-        return html_table().print(table, ['DNA','Num'])
+        return "Graph";
+    
 
     def plot_error_dna_html(self,dna, error):
         out = ''
@@ -153,21 +154,21 @@ class dna_chunk:
     
     def vote(self):
         if self.R: return self.R
-        if self.rN == 0: return None
+   
         R = [{'A':0,'T':0,'G':0,'C':0} for i in range(len(self.ori_dna))]
-        # compute subs
+       
         for re_dna in self.re_dnas:
             read_num, error, _ = re_dna
             for e in error:
                 pos,tp,base = e
                 if tp == 's':
                     R[min(len(self.ori_dna)-1,pos)][base]+= read_num
-        # original base
+    
         for i in range(len(self.ori_dna)):
             base = self.ori_dna[i]
             r = R[i]
             r[base] = self.rN - sum([r[b] for b in self.BASE])
-        # to prob
+       
         for r in R:
             for base in self.BASE:
                 r[base] = r[base] / self.rN * 100
@@ -200,23 +201,7 @@ class dna_chunk:
             re_dna = re_dna + next_base
         return re_dna
                     
-    def plot_voting_result(self):
-        if not self.vote():
-            print('NOOOOOOO! Strand is lost.')
-            return None
-        data = []
-        y = [self.R[i][self.ori_dna[i]] for i in range(len(self.ori_dna))]
-        GT = go.Scatter(y=y,marker_color='gray',mode='lines',line_width = 1)
-        data.append(GT)
-
-        for b in self.BASE:
-            y = [p[b] for p in self.R]
-            prop = go.Scatter(y=y,marker_color = self.BASE_COLOR[b],mode='markers',marker_size = 4,hovertext = [str(p) for p in self.R])
-            data.append(prop)
-        
-        fig = go.Figure(data) 
-        fig.update_layout(height=300,width = 900, showlegend = False,title="Voting Result", xaxis_title="Position",yaxis_title="Frequency",)
-        return fig
+  
     
 def diff(a,b):
     return sp_to_final(diff_sp(a,b))
